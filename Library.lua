@@ -3507,7 +3507,7 @@ function Library:CreateWindow(...)
     local Toggled = false;
     local Fading = false;
 
-    function Library:Toggle(IgnoreModal)
+    function Library:Toggle()
         if Fading then
             return;
         end;
@@ -3515,7 +3515,7 @@ function Library:CreateWindow(...)
         local FadeTime = Config.MenuFadeTime;
         Fading = true;
         Toggled = (not Toggled);
-        ModalElement.Modal = if IgnoreModal then ModalElement.Modal else Toggled;
+        ModalElement.Modal = if Config.IgnoreModal then ModalElement.Modal else Toggled;
 
         if Toggled then
             -- A bit scuffed, but if we're going from not toggled -> toggled we want to show the frame immediately so that the fade is visible.
