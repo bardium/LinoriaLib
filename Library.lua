@@ -2396,6 +2396,7 @@ do
 			BackgroundColor3 = Color3.new(0, 0, 0),
 			BorderColor3 = Color3.new(0, 0, 0),
 			ZIndex = 20,
+			Active = true,
 			Visible = false,
 			Parent = ScreenGui,
 		})
@@ -2423,6 +2424,7 @@ do
 			BorderSizePixel = 0,
 			Size = UDim2.new(1, 0, 1, 0),
 			ZIndex = 21,
+			Active = true,
 			Parent = ListOuter,
 		})
 
@@ -2437,6 +2439,7 @@ do
 			CanvasSize = UDim2.new(0, 0, 0, 0),
 			Size = UDim2.new(1, 0, 1, 0),
 			ZIndex = 21,
+			Active = true,
 			Parent = ListInner,
 
 			TopImage = "rbxasset://textures/ui/Scroll/scroll-middle.png",
@@ -2565,7 +2568,7 @@ do
 					Library.RegistryMap[ButtonLabel].Properties.TextColor3 = Selected and "AccentColor" or "FontColor"
 				end
 
-				ButtonLabel.InputBegan:Connect(function(Input)
+				Button.InputBegan:Connect(function(Input)
 					if Input.UserInputType == Enum.UserInputType.MouseButton1 then
 						local Try = not Selected
 
