@@ -2395,7 +2395,7 @@ do
 		local ListOuter = Library:Create("Frame", {
 			BackgroundColor3 = Color3.new(0, 0, 0),
 			BorderColor3 = Color3.new(0, 0, 0),
-			ZIndex = 20,
+			ZIndex = 100,
 			Active = true,
 			Visible = false,
 			Parent = ScreenGui,
@@ -2423,7 +2423,7 @@ do
 			BorderMode = Enum.BorderMode.Inset,
 			BorderSizePixel = 0,
 			Size = UDim2.new(1, 0, 1, 0),
-			ZIndex = 21,
+			ZIndex = 101,
 			Active = true,
 			Parent = ListOuter,
 		})
@@ -2438,7 +2438,7 @@ do
 			BorderSizePixel = 0,
 			CanvasSize = UDim2.new(0, 0, 0, 0),
 			Size = UDim2.new(1, 0, 1, 0),
-			ZIndex = 21,
+			ZIndex = 102,
 			Active = true,
 			Parent = ListInner,
 
@@ -2500,6 +2500,10 @@ do
 		end
 
 		function Dropdown:BuildDropdownList()
+			if not Scrolling then
+				return
+			end
+			
 			local Values = Dropdown.Values
 			local Buttons = {}
 
@@ -2516,13 +2520,15 @@ do
 
 				Count = Count + 1
 
-				local Button = Library:Create("Frame", {
+				local Button = Library:Create("TextButton", {
 					BackgroundColor3 = Library.MainColor,
 					BorderColor3 = Library.OutlineColor,
 					BorderMode = Enum.BorderMode.Middle,
 					Size = UDim2.new(1, -1, 0, 20),
-					ZIndex = 23,
+					Text = "",
+					ZIndex = 103,
 					Active = true,
+					AutoButtonColor = false,
 					Parent = Scrolling,
 				})
 
@@ -2538,15 +2544,15 @@ do
 					TextSize = 14,
 					Text = Value,
 					TextXAlignment = Enum.TextXAlignment.Left,
-					ZIndex = 25,
+					ZIndex = 105,
 					Parent = Button,
 				})
 
 				Library:OnHighlight(
 					Button,
 					Button,
-					{ BorderColor3 = "AccentColor", ZIndex = 24 },
-					{ BorderColor3 = "OutlineColor", ZIndex = 23 }
+					{ BorderColor3 = "AccentColor", ZIndex = 104 },
+					{ BorderColor3 = "OutlineColor", ZIndex = 103 }
 				)
 
 				local Selected
@@ -2651,6 +2657,11 @@ do
 		end
 
 		function Dropdown:OpenDropdown()
+			if not ListOuter then
+				return
+			end
+			RecalculateListPosition()
+			Dropdown:BuildDropdownList()
 			ListOuter.Visible = true
 			Library.OpenedFrames[ListOuter] = true
 			DropdownArrow.Rotation = 180
@@ -2705,18 +2716,47 @@ do
 			end)
 		end
 
+
 		InputService.InputBegan:Connect(function(Input)
 			if Input.UserInputType == Enum.UserInputType.MouseButton1 then
-				local AbsPos, AbsSize = ListOuter.AbsolutePosition, ListOuter.AbsoluteSize
+				-- Use delay to allow dropdown to open and position first
+				task.delay(0.01, function()
+					if not ListOuter.Visible then
+						return
+					end
+					
+					local AbsPos, AbsSize = ListOuter.AbsolutePosition, ListOuter.AbsoluteSize
 
-				if
-					Mouse.X < AbsPos.X
-					or Mouse.X > AbsPos.X + AbsSize.X
-					or Mouse.Y < (AbsPos.Y - 20 - 1)
-					or Mouse.Y > AbsPos.Y + AbsSize.Y
-				then
-					Dropdown:CloseDropdown()
-				end
+					-- Check if click is inside the dropdown list
+					local isInside = Mouse.X >= AbsPos.X
+						and Mouse.X <= AbsPos.X + AbsSize.X
+						and Mouse.Y >= AbsPos.Y
+						and Mouse.Y <= AbsPos.Y + AbsSize.Y
+
+					if not isInside then
+						-- Also check if click is on the dropdown outer (the main dropdown button)
+						local DropdownAbsPos, DropdownAbsSize = DropdownOuter.AbsolutePosition, DropdownOuter.AbsoluteSize
+						local isOnDropdown = Mouse.X >= DropdownAbsPos.X
+							and Mouse.X <= DropdownAbsPos.X + DropdownAbsSize.X
+							and Mouse.Y >= DropdownAbsPos.Y
+							and Mouse.Y <= DropdownAbsPos.Y + DropdownAbsSize.Y
+						
+						-- Also check if click is on the combobox input
+						local isOnInput = false
+						if Dropdown.Combobox and ItemInput then
+							local InputAbsPos = ItemInput.AbsolutePosition
+							local InputAbsSize = ItemInput.AbsoluteSize
+							isOnInput = Mouse.X >= InputAbsPos.X
+								and Mouse.X <= InputAbsPos.X + InputAbsSize.X
+								and Mouse.Y >= InputAbsPos.Y
+								and Mouse.Y <= InputAbsPos.Y + InputAbsSize.Y
+						end
+						
+						if not isOnDropdown and not isOnInput then
+							Dropdown:CloseDropdown()
+						end
+					end
+				end)
 			end
 		end)
 
